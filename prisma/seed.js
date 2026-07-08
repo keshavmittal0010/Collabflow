@@ -20,6 +20,7 @@ function parseDbUrl(url) {
     host: match[3],
     port: parseInt(match[4]),
     database: match[5],
+    connectTimeout: 20000,
     connectionLimit: 5
   }
 }
