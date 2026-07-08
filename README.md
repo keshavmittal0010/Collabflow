@@ -217,27 +217,54 @@ ER Design → [`docs/DATABASE.md`](./docs/DATABASE.md)
 
 ## 🌐 Environment Variables
 
+Copy the `.env.example` file to `.env.local` and define the required variables. **Do not commit actual credentials or secrets to public repositories.**
+
 ```env
-# Database (MySQL)
-DATABASE_URL="mysql://root:password@localhost:3306/collabflow"
+# Database Configuration
+DATABASE_URL=
 
-# JWT (generate: openssl rand -base64 32)
-JWT_SECRET="minimum-32-character-secret-key-here"
-JWT_EXPIRES_IN="15m"
-JWT_REFRESH_SECRET="different-minimum-32-character-key"
-JWT_REFRESH_EXPIRES_IN="7d"
+# JWT Authentication Secrets
+JWT_SECRET=
+JWT_EXPIRES_IN=
+JWT_REFRESH_SECRET=
+JWT_REFRESH_EXPIRES_IN=
 
-# App URLs
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-NEXT_PUBLIC_SOCKET_URL="http://localhost:3000"
+# Application URLs
+NEXT_PUBLIC_APP_URL=
+NEXT_PUBLIC_SOCKET_URL=
 
-# Environment
-NODE_ENV="development"
+# Node Environment
+NODE_ENV=
 
-# File Storage (Phase 5+)
-UPLOADTHING_SECRET=""
-UPLOADTHING_APP_ID=""
+# File Storage Configuration (Uploadthing)
+UPLOADTHING_SECRET=
+UPLOADTHING_APP_ID=
 ```
+
+---
+
+## 🚀 Deployment Guide
+
+### 1. Database Deployment (Railway)
+1. Provision a **MySQL Database** on Railway.
+2. Under database settings, copy the **Connection URL** (e.g., `mysql://...`).
+3. Set the `DATABASE_URL` environment variable to this URL.
+
+### 2. Frontend Deployment (Vercel)
+1. Connect your GitHub repository to Vercel.
+2. In the project settings, add the environment variables defined above:
+   * Set `NODE_ENV` to `production`.
+   * Generate secure 32-character strings for `JWT_SECRET` and `JWT_REFRESH_SECRET` (e.g., using `openssl rand -base64 32`).
+   * Set `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_SOCKET_URL` to your production deployment URL.
+3. Configure the Vercel build settings to run `npx prisma generate` during the build step.
+4. Click **Deploy**.
+
+---
+
+## 🔒 Security Notes
+* **Secrets Management:** All API keys, tokens, and database passwords must live strictly in environment variables. Local credentials must remain in `.env.local` which is permanently ignored by Git.
+* **JWT Expirations:** Ensure accessToken lifetimes are kept short (e.g., `15m`) and refresh tokens are securely checked in the database during session restorations.
+* **XSS & Clickjacking:** CollabFlow configures custom HTTP security headers (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`) inside `next.config.ts` to protect the browser runtime.
 
 ---
 
@@ -276,10 +303,10 @@ UPLOADTHING_APP_ID=""
 - [x] **Phase 4** — Projects & Boards (Kanban columns, inline rename/delete)
 - [x] **Phase 5** — Task Management (Drag-drop, Assignees, Comments, Task Drawer)
 - [x] **Phase 6** — Real-time Collaboration (Socket.io, Presence, Live Updates)
-- [ ] **Phase 7** — Chat System (Channels, DMs, Threads, Reactions)
-- [ ] **Phase 8** — Notifications (Push, @Mentions, Activity Feed)
-- [ ] **Phase 9** — Analytics Dashboard (Charts, Burndown, Velocity)
-- [ ] **Phase 10** — Testing, Deployment, Documentation
+- [x] **Phase 7** — Chat System (Channels, DMs, Threads, Reactions)
+- [x] **Phase 8** — Notifications (Push, @Mentions, Activity Feed)
+- [x] **Phase 9** — Workspace Analytics Dashboard (SVG Graphs)
+- [x] **Phase 10** — Testing, Deployment, Documentation
 
 ---
 

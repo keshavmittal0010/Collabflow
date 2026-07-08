@@ -1,4 +1,4 @@
-﻿╔══════════════════════════════════════════════════════════════════════════════╗
+╔══════════════════════════════════════════════════════════════════════════════╗
 ║                         CollabFlow — Project Guide                         ║
 ║                    "Collaborate. Build. Deliver."                           ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
@@ -33,8 +33,8 @@ Linear + Slack combined into one sleek app. Teams can:
 
   All accounts password: Demo@1234
 
-  Alex Morgan (Product Manager / Workspace Owner)
-    Email:      alex.morgan@collabflow.dev
+  Aarav Mehta (Product Manager / Workspace Owner)
+    Email:      aarav.mehta@collabflow.dev
     Password:   Demo@1234
     Workspaces: Alpha Studio (OWNER), Beta Labs (MEMBER)
 
@@ -43,8 +43,8 @@ Linear + Slack combined into one sleek app. Teams can:
     Password:   Demo@1234
     Workspaces: Alpha Studio (ADMIN), Beta Labs (OWNER)
 
-  James Carter (UI/UX Designer)
-    Email:      james.carter@collabflow.dev
+  Aryan Kapoor (UI/UX Designer)
+    Email:      aryan.kapoor@collabflow.dev
     Password:   Demo@1234
     Workspaces: Alpha Studio (MEMBER, lead of Website Redesign)
 
@@ -56,15 +56,15 @@ Linear + Slack combined into one sleek app. Teams can:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Alpha Studio (PRO plan)
-    Members: Alex (owner), Priya (admin), James (member)
+    Members: Aarav (owner), Priya (admin), Aryan (member)
     Projects:
-      [1] Website Redesign  — Active | High priority | Lead: James
+      [1] Website Redesign  — Active | High priority | Lead: Aryan
           Board: Backlog -> To Do -> In Progress -> Done
       [2] Mobile App v2     — Planning | Critical priority | Lead: Priya
           Board: Backlog -> Todo -> In Progress -> Review -> Done
 
   Beta Labs (FREE plan)
-    Members: Priya (owner), Alex (member)
+    Members: Priya (owner), Aarav (member)
     Projects:
       [3] API Platform      — Active | Medium priority | Lead: Priya
           Board: Backlog -> Todo -> In Progress -> Done
