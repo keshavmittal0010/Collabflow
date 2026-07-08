@@ -1,0 +1,627 @@
+// CollabFlow — Prisma Schema
+// Version: 1.0
+// Database: MySQL 8.0
+// Generated: 2026-07-07
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Theme {
+  light
+  dark
+  system
+}
+
+enum WorkspacePlan {
+  free
+  pro
+  enterprise
+}
+
+enum WorkspaceRole {
+  owner
+  admin
+  member
+  viewer
+}
+
+enum ProjectStatus {
+  planning
+  active
+  on_hold
+  completed
+  archived
+}
+
+enum Priority {
+  critical
+  high
+  medium
+  low
+  none
+}
+
+enum BoardType {
+  kanban
+  list
+  calendar
+  timeline
+}
+
+enum ChannelType {
+  public
+  private
+  dm
+}
+
+enum TeamRole {
+  lead
+  member
+}
+
+enum ProjectRole {
+  lead
+  member
+  viewer
+}
+
+enum NotificationType {
+  task_assigned
+  task_updated
+  task_completed
+  comment_added
+  mention
+  workspace_invite
+  deadline_approaching
+  project_updated
+  member_joined
+}
+
+// ============================================================
+// USER
+// ============================================================
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String    @map("password_hash")
+  avatarUrl    String?   @map("avatar_url") @db.VarChar(500)
+  bio          String?   @db.Text
+  timezone     String    @default("UTC")
+  theme        Theme     @default(system)
+  isOnline     Boolean   @default(false) @map("is_online")
+  lastSeen     DateTime? @map("last_seen")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  ownedWorkspaces      Workspace[]       @relation("WorkspaceOwner")
+  workspaceMemberships WorkspaceMember[]
+  teamMemberships      TeamMember[]
+  projectMemberships   ProjectMember[]
+  createdProjects      Project[]         @relation("ProjectCreator")
+  leadProjects         Project[]         @relation("ProjectLead")
+  createdBoards        Board[]
+  createdTasks         Task[]            @relation("TaskCreator")
+  assignedTasks        TaskAssignee[]
+  comments             Comment[]
+  createdChannels      Channel[]
+  channelMemberships   ChannelMember[]
+  messages             Message[]
+  reactions            Reaction[]
+  attachments          Attachment[]
+  createdDocuments     Document[]        @relation("DocumentCreator")
+  editedDocuments      Document[]        @relation("DocumentLastEditor")
+  notifications        Notification[]    @relation("NotificationRecipient")
+  actorNotifications   Notification[]    @relation("NotificationActor")
+  actorActivities      ActivityLog[]     @relation("ActivityActor")
+  sentInvites          WorkspaceInvite[] @relation("InviteSender")
+  refreshTokens        RefreshToken[]
+  teams                Team[]
+
+  @@map("users")
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique @db.VarChar(500)
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ============================================================
+// WORKSPACE
+// ============================================================
+
+model Workspace {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  description String?       @db.Text
+  logoUrl     String?       @map("logo_url") @db.VarChar(500)
+  ownerId     String        @map("owner_id")
+  plan        WorkspacePlan @default(free)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  owner      User              @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  members    WorkspaceMember[]
+  invites    WorkspaceInvite[]
+  teams      Team[]
+  projects   Project[]
+  channels   Channel[]
+  labels     Label[]
+  documents  Document[]
+  activities ActivityLog[]
+
+  @@index([slug])
+  @@index([ownerId])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String        @map("workspace_id")
+  userId      String        @map("user_id")
+  role        WorkspaceRole @default(member)
+  joinedAt    DateTime      @default(now()) @map("joined_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("workspace_members")
+}
+
+model WorkspaceInvite {
+  id          String        @id @default(cuid())
+  workspaceId String        @map("workspace_id")
+  email       String
+  role        WorkspaceRole @default(member)
+  token       String        @unique
+  invitedBy   String        @map("invited_by")
+  expiresAt   DateTime      @map("expires_at")
+  acceptedAt  DateTime?     @map("accepted_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  sender    User      @relation("InviteSender", fields: [invitedBy], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([email])
+  @@map("workspace_invites")
+}
+
+// ============================================================
+// TEAM
+// ============================================================
+
+model Team {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  name        String
+  description String?  @db.Text
+  color       String?  @db.VarChar(7)
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User         @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  members   TeamMember[]
+  projects  Project[]
+
+  @@index([workspaceId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String   @map("team_id")
+  userId   String   @map("user_id")
+  role     TeamRole @default(member)
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+// ============================================================
+// PROJECT
+// ============================================================
+
+model Project {
+  id          String        @id @default(cuid())
+  workspaceId String        @map("workspace_id")
+  teamId      String?       @map("team_id")
+  name        String
+  description String?       @db.Text
+  identifier  String        @db.VarChar(10)
+  status      ProjectStatus @default(planning)
+  priority    Priority      @default(medium)
+  leadId      String?       @map("lead_id")
+  startDate   DateTime?     @map("start_date") @db.Date
+  endDate     DateTime?     @map("end_date") @db.Date
+  logoUrl     String?       @map("logo_url") @db.VarChar(500)
+  isPublic    Boolean       @default(false) @map("is_public")
+  createdBy   String        @map("created_by")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  workspace  Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  team       Team?           @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  lead       User?           @relation("ProjectLead", fields: [leadId], references: [id], onDelete: SetNull)
+  creator    User            @relation("ProjectCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  members    ProjectMember[]
+  boards     Board[]
+  tasks      Task[]
+  channels   Channel[]
+  documents  Document[]
+  activities ActivityLog[]
+
+  @@unique([workspaceId, identifier])
+  @@index([workspaceId])
+  @@index([status])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String      @map("project_id")
+  userId    String      @map("user_id")
+  role      ProjectRole @default(member)
+  joinedAt  DateTime    @default(now()) @map("joined_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+// ============================================================
+// BOARD
+// ============================================================
+
+model Board {
+  id        String    @id @default(cuid())
+  projectId String    @map("project_id")
+  name      String
+  type      BoardType @default(kanban)
+  createdBy String    @map("created_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator User          @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  columns BoardColumn[]
+  tasks   Task[]
+
+  @@index([projectId])
+  @@map("boards")
+}
+
+model BoardColumn {
+  id         String   @id @default(cuid())
+  boardId    String   @map("board_id")
+  name       String
+  color      String?  @db.VarChar(7)
+  position   Int      @default(0)
+  isTerminal Boolean  @default(false) @map("is_terminal")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  board Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@index([boardId])
+  @@index([position])
+  @@map("board_columns")
+}
+
+// ============================================================
+// TASK
+// ============================================================
+
+model Task {
+  id          String    @id @default(cuid())
+  projectId   String    @map("project_id")
+  boardId     String?   @map("board_id")
+  columnId    String?   @map("column_id")
+  parentId    String?   @map("parent_id")
+  title       String    @db.VarChar(500)
+  description String?   @db.LongText
+  identifier  String    @db.VarChar(20)
+  status      String    @default("todo") @db.VarChar(50)
+  priority    Priority  @default(medium)
+  position    Decimal   @default(0) @db.Decimal(20, 8)
+  dueDate     DateTime? @map("due_date")
+  startDate   DateTime? @map("start_date")
+  estimate    Decimal?  @db.Decimal(6, 2)
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  completedAt DateTime? @map("completed_at")
+
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  board       Board?         @relation(fields: [boardId], references: [id], onDelete: SetNull)
+  column      BoardColumn?   @relation(fields: [columnId], references: [id], onDelete: SetNull)
+  parent      Task?          @relation("TaskSubtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  creator     User           @relation("TaskCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  subtasks    Task[]         @relation("TaskSubtasks")
+  assignees   TaskAssignee[]
+  labels      TaskLabel[]
+  comments    Comment[]
+  attachments Attachment[]
+
+  @@index([projectId])
+  @@index([columnId])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([position])
+  @@index([identifier])
+  @@map("tasks")
+}
+
+model TaskAssignee {
+  taskId     String   @map("task_id")
+  userId     String   @map("user_id")
+  assignedAt DateTime @default(now()) @map("assigned_at")
+  assignedBy String?  @map("assigned_by")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
+  @@map("task_assignees")
+}
+
+// ============================================================
+// LABEL
+// ============================================================
+
+model Label {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  name        String   @db.VarChar(100)
+  color       String   @db.VarChar(7)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tasks     TaskLabel[]
+
+  @@unique([workspaceId, name])
+  @@map("labels")
+}
+
+model TaskLabel {
+  taskId  String @map("task_id")
+  labelId String @map("label_id")
+
+  task  Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, labelId])
+  @@map("task_labels")
+}
+
+// ============================================================
+// COMMENT
+// ============================================================
+
+model Comment {
+  id        String   @id @default(cuid())
+  taskId    String   @map("task_id")
+  authorId  String   @map("author_id")
+  parentId  String?  @map("parent_id")
+  content   String   @db.Text
+  isEdited  Boolean  @default(false) @map("is_edited")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  task    Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([taskId])
+  @@map("comments")
+}
+
+// ============================================================
+// CHANNEL & MESSAGE
+// ============================================================
+
+model Channel {
+  id          String      @id @default(cuid())
+  workspaceId String      @map("workspace_id")
+  projectId   String?     @map("project_id")
+  name        String      @db.VarChar(100)
+  description String?     @db.Text
+  type        ChannelType @default(public)
+  createdBy   String      @map("created_by")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project   Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  creator   User            @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  members   ChannelMember[]
+  messages  Message[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@map("channels")
+}
+
+model ChannelMember {
+  channelId String   @map("channel_id")
+  userId    String   @map("user_id")
+  joinedAt  DateTime @default(now()) @map("joined_at")
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([channelId, userId])
+  @@map("channel_members")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  channelId String   @map("channel_id")
+  authorId  String   @map("author_id")
+  parentId  String?  @map("parent_id")
+  content   String?  @db.Text
+  isEdited  Boolean  @default(false) @map("is_edited")
+  isPinned  Boolean  @default(false) @map("is_pinned")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  channel     Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent      Message?     @relation("MessageThreads", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     Message[]    @relation("MessageThreads")
+  reactions   Reaction[]
+  attachments Attachment[]
+
+  @@index([channelId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  emoji     String   @db.VarChar(10)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@map("reactions")
+}
+
+// ============================================================
+// ATTACHMENT
+// ============================================================
+
+model Attachment {
+  id         String   @id @default(cuid())
+  taskId     String?  @map("task_id")
+  messageId  String?  @map("message_id")
+  uploaderId String   @map("uploader_id")
+  filename   String
+  fileUrl    String   @map("file_url") @db.VarChar(500)
+  fileSize   BigInt   @map("file_size")
+  mimeType   String   @map("mime_type") @db.VarChar(100)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  task     Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  message  Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  uploader User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+// ============================================================
+// DOCUMENT
+// ============================================================
+
+model Document {
+  id           String   @id @default(cuid())
+  workspaceId  String   @map("workspace_id")
+  projectId    String?  @map("project_id")
+  title        String   @default("Untitled")
+  content      String?  @db.LongText
+  createdBy    String   @map("created_by")
+  lastEditedBy String?  @map("last_edited_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project    Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  creator    User      @relation("DocumentCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  lastEditor User?     @relation("DocumentLastEditor", fields: [lastEditedBy], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([projectId])
+  @@map("documents")
+}
+
+// ============================================================
+// NOTIFICATION
+// ============================================================
+
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String           @map("user_id")
+  type       NotificationType
+  title      String
+  body       String?          @db.Text
+  actionUrl  String?          @map("action_url") @db.VarChar(500)
+  actorId    String?          @map("actor_id")
+  entityType String?          @map("entity_type") @db.VarChar(50)
+  entityId   String?          @map("entity_id")
+  isRead     Boolean          @default(false) @map("is_read")
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  user  User  @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor User? @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ============================================================
+// ACTIVITY LOG
+// ============================================================
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  projectId   String?  @map("project_id")
+  actorId     String   @map("actor_id")
+  action      String   @db.VarChar(100)
+  entityType  String   @map("entity_type") @db.VarChar(50)
+  entityId    String   @map("entity_id")
+  entityName  String?  @map("entity_name")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  actor     User      @relation("ActivityActor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([projectId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}

@@ -1,0 +1,160 @@
+﻿╔══════════════════════════════════════════════════════════════════════════════╗
+║                         CollabFlow — Project Guide                         ║
+║                    "Collaborate. Build. Deliver."                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  WHAT IS COLLABFLOW?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CollabFlow is a real-time collaborative workspace platform — think Notion +
+Linear + Slack combined into one sleek app. Teams can:
+
+  • Create shared Workspaces                (like Notion)
+  • Manage Projects with Kanban Boards      (like Linear / Jira)
+  • Track Tasks with priorities & labels    (like ClickUp)
+  • Chat in real-time channels              (like Slack)
+  • Write shared documents                  (like Google Docs)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  QUICK START — HOW TO RUN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Step 1: Make sure MySQL is running on port 3306
+  Step 2: Open terminal in:  d:\KESHAV\CODE\PROJECTS\collabflow\
+  Step 3: Run:               npm run dev
+  Step 4: Open browser:      http://localhost:3000
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DUMMY TEST ACCOUNTS (pre-seeded, ready to log in)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  All accounts password: Demo@1234
+
+  Alex Morgan (Product Manager / Workspace Owner)
+    Email:      alex.morgan@collabflow.dev
+    Password:   Demo@1234
+    Workspaces: Alpha Studio (OWNER), Beta Labs (MEMBER)
+
+  Priya Sharma (Full-Stack Developer / Admin)
+    Email:      priya.sharma@collabflow.dev
+    Password:   Demo@1234
+    Workspaces: Alpha Studio (ADMIN), Beta Labs (OWNER)
+
+  James Carter (UI/UX Designer)
+    Email:      james.carter@collabflow.dev
+    Password:   Demo@1234
+    Workspaces: Alpha Studio (MEMBER, lead of Website Redesign)
+
+  To re-seed:  node prisma/seed.js
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  PRE-SEEDED DATA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Alpha Studio (PRO plan)
+    Members: Alex (owner), Priya (admin), James (member)
+    Projects:
+      [1] Website Redesign  — Active | High priority | Lead: James
+          Board: Backlog -> To Do -> In Progress -> Done
+      [2] Mobile App v2     — Planning | Critical priority | Lead: Priya
+          Board: Backlog -> Todo -> In Progress -> Review -> Done
+
+  Beta Labs (FREE plan)
+    Members: Priya (owner), Alex (member)
+    Projects:
+      [3] API Platform      — Active | Medium priority | Lead: Priya
+          Board: Backlog -> Todo -> In Progress -> Done
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  STEP-BY-STEP USAGE GUIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  STEP 1 — LOG IN
+    1. Go to http://localhost:3000
+    2. Enter any test email above + password: Demo@1234
+    3. Click "Sign In" -> redirects to Dashboard
+
+  STEP 2 — DASHBOARD
+    Shows your workspaces, recent activity, quick access to projects.
+    Left sidebar: your workspace list and navigation.
+
+  STEP 3 — EXPLORE A WORKSPACE
+    Click any workspace in the sidebar.
+    Inside: Members list, Projects grid, Channels, Documents.
+
+  STEP 4 — OPEN A PROJECT & KANBAN BOARD
+    Click any project card (e.g., "Website Redesign").
+    See the Kanban board with columns side by side.
+    + Add Column button at the end to create new columns.
+    Pencil icon on column header to rename.
+    Trash icon to delete a column.
+
+  STEP 5 — CREATE A NEW WORKSPACE
+    Click "New Workspace" in the sidebar.
+    Fill in: Name, Slug (URL key), Description.
+    Click Create. You are automatically the owner.
+    Invite others via the "Invite Member" button inside the workspace.
+
+  STEP 6 — CREATE A NEW PROJECT
+    Enter any workspace.
+    Click "New Project" (top-right of workspace page).
+    Fill in: Project Name, Identifier (e.g. "DEV"), Description, Priority.
+    A Kanban board with 4 default columns is created automatically.
+
+  STEP 7 — MANAGE MEMBERS
+    Roles: Owner > Admin > Member > Viewer
+    Owner: full control, can delete workspace
+    Admin: manage members and projects
+    Member: create tasks and work on boards
+    Viewer: read-only access
+
+  STEP 8 — ACCOUNT SETTINGS
+    Click your avatar (top-right).
+    Edit: name, bio, timezone, avatar URL.
+
+  STEP 9 — LOG OUT
+    Click avatar -> "Sign Out".
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  COLOUR PALETTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Background:    #1e1e1e  Deep Charcoal (overall app background)
+  Panels:        #2e2e2e  Medium Charcoal
+  Elevated:      #363636  Light Charcoal (dropdowns, cards)
+  Accent:        #6D8196  Steel Blue (buttons, links, highlights)
+  Text primary:  #FFFFE3  Soft Ivory
+  Text muted:    #CBCBCB  Cool Gray
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TECH STACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Frontend:   Next.js 16 (App Router) + TypeScript
+  Styling:    Tailwind CSS v4 + Custom CSS design tokens
+  Database:   MySQL / MariaDB
+  ORM:        Prisma 7 + @prisma/adapter-mariadb
+  State:      Zustand + TanStack React Query
+  Auth:       JWT (access token 15m + refresh token 7d)
+  Forms:      React Hook Form + Zod validation
+  Icons:      Lucide React
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  COMMON COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  npm run dev              Start dev server (http://localhost:3000)
+  npx tsc --noEmit         Type-check (must return 0 errors)
+  node prisma/seed.js      Seed/reset dummy users and data
+  npx prisma studio        Visual database browser
+  npx prisma migrate dev   Run new DB migrations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
